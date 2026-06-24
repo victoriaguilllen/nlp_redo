@@ -1,73 +1,73 @@
 # Fine-tune Once, Serve Anywhere: Transformers, Unsloth, vLLM & Ollama
 
-Proyecto final de NLP II — Curso 2025/2026  
+NLP II Final Project — Academic Year 2025/2026  
 Universidad Pontificia Comillas (ICAI)
 
-## Descripción
+## Overview
 
-Proyecto de fine-tuning e inferencia de LLMs usando el dataset **Databricks Dolly 15k** y el modelo base **TinyLlama-1.1B-Chat**. Se comparan cuatro frameworks:
+Fine-tuning and inference project for LLMs using the **Databricks Dolly 15k** dataset and **TinyLlama-1.1B-Chat** as the base model. Four frameworks are compared:
 
-- **Hugging Face Transformers + PEFT** (LoRA, float32 base — QLoRA requiere CUDA)
-- **Unsloth** (MLX backend, Apple Silicon) — modelo principal
-- **vLLM** (excluido — requiere CUDA; sin backend MPS/Metal)
+- **Hugging Face Transformers + PEFT** (LoRA, float32 base — QLoRA requires CUDA)
+- **Unsloth** (MLX backend, Apple Silicon) — primary model
+- **vLLM** (excluded — requires CUDA; no MPS/Metal backend)
 - **Ollama** (Metal backend, llama.cpp Q4)
 
-**Modelos finales seleccionados:** Transformers LoRA v1 y Unsloth LoRA v2.
+**Final models selected:** Transformers LoRA v1 and Unsloth LoRA v2.
 
 ---
 
-## Estructura del proyecto
+## Project Structure
 
 ```
 ProyectoFinal/
 ├── src/
 │   ├── data/
-│   │   └── prepare_data.py               # PASO 1 — Descarga y split del dataset
+│   │   └── prepare_data.py               # STEP 1 — Download and split the dataset
 │   ├── train/
-│   │   ├── train_transformers_lora.py    # Fine-tuning Transformers LoRA v1 (2k, 1 epoch)
-│   │   ├── train_transformers_lora_v2.py # Fine-tuning Transformers LoRA v2 (fallido — NaN)
-│   │   ├── train_unsloth.py              # Fine-tuning Unsloth MLX v1 (2k, 1 epoch)
-│   │   └── train_unsloth_v2.py           # Fine-tuning Unsloth MLX v2 (6k, 2 epochs) ← principal
+│   │   ├── train_transformers_lora.py    # Transformers LoRA v1 (2k samples, 1 epoch)
+│   │   ├── train_transformers_lora_v2.py # Transformers LoRA v2 (failed — NaN propagation)
+│   │   ├── train_unsloth.py              # Unsloth MLX v1 (2k samples, 1 epoch)
+│   │   └── train_unsloth_v2.py           # Unsloth MLX v2 (6k samples, 2 epochs) ← primary
 │   ├── eval/
-│   │   ├── evaluate_baseline.py          # Evaluación zero-shot (modelo original)
-│   │   ├── evaluate_finetuned.py         # Evaluación Transformers LoRA v1
-│   │   ├── evaluate_unsloth.py           # Evaluación Unsloth v1
-│   │   ├── evaluate_unsloth_v2.py        # Evaluación Unsloth v2
-│   │   ├── infer_unsloth_v2.py           # Demo de inferencia con 7 prompts (Unsloth v2)
-│   │   ├── compare_models.py             # Comparación automática entre modelos
-│   │   └── fill_human_scores.py          # Rellena scores de evaluación humana
+│   │   ├── evaluate_baseline.py          # Zero-shot evaluation (base model)
+│   │   ├── evaluate_finetuned.py         # Evaluation — Transformers LoRA v1
+│   │   ├── evaluate_unsloth.py           # Evaluation — Unsloth v1
+│   │   ├── evaluate_unsloth_v2.py        # Evaluation — Unsloth v2
+│   │   ├── infer_unsloth_v2.py           # Inference demo with 7 prompts (Unsloth v2)
+│   │   ├── compare_models.py             # Automatic cross-model comparison
+│   │   └── fill_human_scores.py          # Fills human evaluation scores
 │   ├── benchmark/
-│   │   ├── benchmark_transformers.py     # Benchmark Transformers (MPS)
-│   │   ├── benchmark_unsloth.py          # Benchmark Unsloth MLX v1 (base)
-│   │   ├── benchmark_unsloth_v2.py       # Benchmark Unsloth MLX v2 (con LoRA)
-│   │   ├── benchmark_vllm.py             # Benchmark vLLM (CPU en macOS — excluido)
-│   │   ├── benchmark_ollama.py           # Benchmark Ollama (Metal)
-│   │   ├── collect_responses.py          # Captura respuestas de texto por framework
-│   │   └── run_all_benchmarks.py         # Ejecuta benchmarks y genera tabla resumen
-│   └── generate_figures_v2.py            # Genera las 11 figuras comparativas
+│   │   ├── benchmark_transformers.py     # Inference benchmark — Transformers (MPS)
+│   │   ├── benchmark_unsloth.py          # Inference benchmark — Unsloth MLX v1 (base)
+│   │   ├── benchmark_unsloth_v2.py       # Inference benchmark — Unsloth MLX v2 (with LoRA)
+│   │   ├── benchmark_vllm.py             # Inference benchmark — vLLM (CPU on macOS, excluded)
+│   │   ├── benchmark_ollama.py           # Inference benchmark — Ollama (Metal)
+│   │   ├── collect_responses.py          # Captures text responses per framework
+│   │   └── run_all_benchmarks.py         # Runs all benchmarks and generates summary table
+│   └── generate_figures_v2.py            # Generates all 11 comparative figures
 │
 ├── data/
 │   └── splits/
-│       ├── train.jsonl                   # 12.000 ejemplos de entrenamiento
-│       ├── dev.jsonl                     #  2.000 ejemplos de validación
-│       └── test.jsonl                    #  1.000 ejemplos de prueba
+│       ├── train.jsonl                   # 12,000 training examples
+│       ├── dev.jsonl                     #  2,000 validation examples
+│       └── test.jsonl                    #  1,000 test examples
 │
 ├── results/
-│   ├── original_model/                   # Baseline sin fine-tuning
+│   ├── original_model/                   # Zero-shot baseline
 │   │   ├── metrics.json
 │   │   ├── predictions.jsonl
 │   │   └── human_eval_prompts.json
-│   ├── transformers_lora/                # Transformers LoRA v1 ← modelo final
+│   ├── transformers_lora/                # Transformers LoRA v1 ← final model
 │   │   ├── adapter_model.safetensors
 │   │   ├── training_log.json
 │   │   └── eval/
-│   ├── transformers_lora_v2/             # Transformers LoRA v2 (fallido — NaN en step 40)
-│   │   └── training_log.json             # Solo log; pesos NaN descartados
+│   ├── transformers_lora_v2/             # Transformers LoRA v2 (failed — NaN at step 40)
+│   │   └── training_log.json             # Log only; corrupted weights discarded
 │   ├── unsloth_lora/                     # Unsloth MLX v1
 │   │   ├── adapters.safetensors
 │   │   ├── training_log.json
 │   │   └── eval/
-│   ├── unsloth_lora_v2/                  # Unsloth MLX v2 ← modelo principal
+│   ├── unsloth_lora_v2/                  # Unsloth MLX v2 ← primary model
 │   │   ├── adapters.safetensors
 │   │   ├── training_log.json
 │   │   └── eval/
@@ -84,44 +84,44 @@ ProyectoFinal/
 │       ├── benchmark_ollama.json
 │       └── responses_by_framework.json
 │
-├── figures/                              # 11 figuras generadas por generate_figures_v2.py
-│   ├── fig1_metrics.png                  # Mejora relativa por modelo vs baseline
-│   ├── fig2_human_eval.png               # Evaluación humana agrupada (4 modelos, 3 criterios)
-│   ├── fig3_throughput.png               # Throughput con barras de error ±1σ
-│   ├── fig4_latency_boxplot.png          # Distribución de latencia (boxplots)
-│   ├── fig5_human_heatmap.png            # Heatmap de scores por prompt y modelo
-│   ├── fig6_radar.png                    # Radar chart (7 dimensiones, 4 modelos)
-│   ├── fig7_training_comparison.png      # Comparativa de entrenamiento (2×2 grid)
-│   ├── fig8_quality_vs_speed.png         # Calidad vs velocidad (scatter)
-│   ├── fig9_improvement_journey.png      # Evolución baseline → Unsloth v2
-│   ├── fig10_v1_vs_v2_prompts.png        # Unsloth v1 vs v2 por prompt con deltas
-│   └── fig11_std_inference.png           # Variabilidad de inferencia con CV por framework
+├── figures/                              # 11 figures generated by generate_figures_v2.py
+│   ├── fig1_metrics.png                  # Relative improvement per model vs baseline
+│   ├── fig2_human_eval.png               # Grouped human eval bars (4 models, 3 criteria)
+│   ├── fig3_throughput.png               # Throughput with ±1σ error bars
+│   ├── fig4_latency_boxplot.png          # Latency distribution (boxplots)
+│   ├── fig5_human_heatmap.png            # Score heatmap by prompt and model
+│   ├── fig6_radar.png                    # Radar chart (7 dimensions, 4 models)
+│   ├── fig7_training_comparison.png      # Training comparison 2×2 grid
+│   ├── fig8_quality_vs_speed.png         # Quality vs speed scatter plot
+│   ├── fig9_improvement_journey.png      # Progression from baseline to Unsloth v2
+│   ├── fig10_v1_vs_v2_prompts.png        # Unsloth v1 vs v2 per prompt with deltas
+│   └── fig11_std_inference.png           # Inference variability with CV labels
 │
-├── analysis.md                           # Análisis v1 (Transformers y Unsloth v1)
-├── analysis2.md                          # Análisis v2 (Unsloth v2, benchmarks, conclusiones)
-├── promps.md                             # Prompts y respuestas completas (eval humana + inferencia)
+├── analysis.md                           # Analysis v1 (Transformers and Unsloth v1)
+├── analysis2.md                          # Analysis v2 (Unsloth v2, benchmarks, conclusions)
+├── promps.md                             # Full prompts and responses (human eval + inference)
 ├── README.md
-└── doc.pdf                               # Enunciado del proyecto
+└── doc.pdf                               # Project brief
 ```
 
 ---
 
-## Hardware y entorno
+## Hardware and Environment
 
-| Parámetro | Valor |
+| Parameter | Value |
 |-----------|-------|
-| Sistema operativo | macOS (Darwin 24.x, Apple Silicon M4 Pro) |
+| OS | macOS (Darwin 24.x, Apple Silicon M4 Pro) |
 | Python | 3.11.9 |
-| PyTorch | 2.9.0 (backend MPS) |
-| MLX | 0.26.x (backend Unsloth) |
-| RAM unificada | 16 GB |
-| Modelo base | TinyLlama/TinyLlama-1.1B-Chat-v1.0 |
+| PyTorch | 2.9.0 (MPS backend) |
+| MLX | 0.26.x (Unsloth backend) |
+| Unified memory | 16 GB |
+| Base model | TinyLlama/TinyLlama-1.1B-Chat-v1.0 |
 
-> **Nota:** vLLM excluido (requiere CUDA; sin backend MPS/Metal). Se usan MPS y MLX como aceleradores en macOS.
+> **Note:** vLLM excluded (requires CUDA; no MPS/Metal backend). MPS and MLX are used as GPU accelerators on macOS.
 
 ---
 
-## Instalación
+## Installation
 
 ```bash
 # Transformers + PEFT
@@ -131,58 +131,58 @@ pip install datasets transformers accelerate peft sentencepiece \
 # Unsloth / MLX
 pip install unsloth mlx mlx-lm
 
-# Ollama — instalar desde https://ollama.com
+# Ollama — install from https://ollama.com
 ollama pull tinyllama
 ```
 
 ---
 
-## Uso
+## Usage
 
-### PASO 1 — Preparar datos
+### STEP 1 — Prepare data
 
 ```bash
 python src/data/prepare_data.py
 # → data/splits/ (train 12k / dev 2k / test 1k)
 ```
 
-### PASO 2 — Evaluar modelo base
+### STEP 2 — Evaluate base model
 
 ```bash
 python src/eval/evaluate_baseline.py
 ```
 
-### PASO 3 — Fine-tuning
+### STEP 3 — Fine-tuning
 
 ```bash
-# Unsloth v2 — modelo principal (Apple Silicon)
+# Unsloth v2 — primary model (Apple Silicon)
 python3.11 src/train/train_unsloth_v2.py
-# → results/unsloth_lora_v2/  (~62 min en M4 Pro)
+# → results/unsloth_lora_v2/  (~62 min on M4 Pro)
 
 # Transformers v1
 python3.11 src/train/train_transformers_lora.py
-# → results/transformers_lora/  (~29 min en M4 Pro)
+# → results/transformers_lora/  (~29 min on M4 Pro)
 ```
 
-### PASO 4 — Evaluación
+### STEP 4 — Evaluation
 
 ```bash
 python3.11 src/eval/evaluate_unsloth_v2.py
 python3.11 src/eval/infer_unsloth_v2.py
 python3.11 src/eval/evaluate_finetuned.py
-python3.11 src/eval/fill_human_scores.py   # rellena scores humanos
+python3.11 src/eval/fill_human_scores.py
 ```
 
-### PASO 5 — Benchmark de inferencia
+### STEP 5 — Inference benchmark
 
 ```bash
-ollama serve                                    # en otra terminal
+ollama serve                                    # in a separate terminal
 python src/benchmark/benchmark_ollama.py
 python3.11 src/benchmark/benchmark_transformers.py
 python3.11 src/benchmark/benchmark_unsloth_v2.py
 ```
 
-### PASO 6 — Figuras
+### STEP 6 — Figures
 
 ```bash
 python3.11 src/generate_figures_v2.py
@@ -191,56 +191,56 @@ python3.11 src/generate_figures_v2.py
 
 ---
 
-## Resultados
+## Results
 
-### Evaluación automática — 100 ejemplos del test set
+### Automatic Metrics — 100 held-out test examples
 
-| Métrica | Original | TF LoRA v1 | Unsloth v1 | Unsloth v2 |
-|---------|:--------:|:----------:|:----------:|:----------:|
+| Metric | Original | TF LoRA v1 | Unsloth v1 | Unsloth v2 |
+|--------|:--------:|:----------:|:----------:|:----------:|
 | **BLEU** | 0.0625 | 0.0871 (+39%) | 0.0793 (+27%) | **0.1001 (+60%)** |
 | **ROUGE-L** | 0.2174 | 0.2536 (+17%) | 0.2531 (+16%) | **0.2703 (+24%)** |
 | **BERTScore F1** | 0.8657 | 0.8699 (+0.5%) | 0.8697 (+0.5%) | **0.8745 (+1.0%)** |
 
-### Evaluación humana — 5 prompts (escala 1–5)
+### Human Evaluation — 5 prompts (scale 1–5)
 
-| Modelo | Helpfulness | Factuality | Instr.-follow | **Media** |
-|--------|:-----------:|:----------:|:-------------:|:---------:|
+| Model | Helpfulness | Factuality | Instr.-follow | **Mean** |
+|-------|:-----------:|:----------:|:-------------:|:--------:|
 | TinyLlama original | 2.80 | 3.40 | 2.20 | 2.80 |
 | Transformers LoRA v1 | 2.60 | 3.20 | **3.60** | 3.13 |
 | Unsloth v1 | 2.40 | 2.60 | 3.00 | 2.67 |
 | **Unsloth v2** | **3.00** | **3.80** | 3.40 | **3.40** |
 
-### Benchmark de inferencia — modelo base TinyLlama
+### Inference Benchmark — base TinyLlama model
 
-| Framework | Latencia (s) | Throughput (tok/s) | Memoria (MB) |
-|-----------|:------------:|:------------------:|:------------:|
-| **Ollama** (Metal Q4) | **0.88 ± 0.20** | **268.4 ± 1.0** | interno |
-| Unsloth v1 (MLX base) | 1.94 ± 0.75 | 106.7 ± 3.5 | 2.281 |
-| Transformers (MPS) | 2.53 ± 1.53 | 66.6 ± 2.7 | 3.534 |
-| Unsloth v2 (MLX + LoRA) | 1.29 ± 1.21 | 54.9 | 2.354 |
+| Framework | Latency (s) | Throughput (tok/s) | Memory (MB) |
+|-----------|:-----------:|:------------------:|:-----------:|
+| **Ollama** (Metal Q4) | **0.88 ± 0.20** | **268.4 ± 1.0** | internal |
+| Unsloth v1 (MLX base) | 1.94 ± 0.75 | 106.7 ± 3.5 | 2,281 |
+| Transformers (MPS) | 2.53 ± 1.53 | 66.6 ± 2.7 | 3,534 |
+| Unsloth v2 (MLX + LoRA) | 1.29 ± 1.21 | 54.9 | 2,354 |
 
-> Unsloth v2 carga el adaptador LoRA completo; el resto usan el modelo base. Las comparaciones de velocidad son orientativas.
+> Unsloth v2 loads the full LoRA adapter; all others use the base model. Speed comparisons are indicative.
 
-### Entrenamiento
+### Training
 
 | | Transformers LoRA v1 | Unsloth v1 | Unsloth v2 |
 |-|:-------------------:|:----------:|:----------:|
-| Muestras | 2.000 | 2.000 | 6.000 |
-| Épocas / steps | 1 / 125 | 1 / 250 | 2 / 1.500 |
-| Loss final | 1.6895 | 1.7091 | **1.6021** |
-| Tiempo | 28.62 min | **11.20 min** | 62.12 min |
-| Memoria pico (MB) | **2.364** | 3.512 | 3.416 |
+| Samples | 2,000 | 2,000 | 6,000 |
+| Epochs / steps | 1 / 125 | 1 / 250 | 2 / 1,500 |
+| Final loss | 1.6895 | 1.7091 | **1.6021** |
+| Time | 28.62 min | **11.20 min** | 62.12 min |
+| Peak memory (MB) | **2,364** | 3,512 | 3,416 |
 
 ---
 
-## Incidencias técnicas
+## Known Technical Issues
 
-| Incidencia | Causa | Fix |
-|-----------|-------|-----|
-| NaN en TF v2 (step 40) | `float16` sin AMP → overflow logits con secuencias largas | `dtype=float32` + `max_grad_norm=0.3` |
-| 0 steps en Unsloth v2 | `max_steps=-1` con `epochs=2` → schedule vacío en MLXTrainer | `max_steps=1500` explícito |
-| SIGABRT en Unsloth v2 (step ~510) | Ejemplo de 6.887 tokens activa assert Metal con `max_seq_len=512` | `max_seq_len=384` |
-| OOM / SIGKILL en Unsloth v2 | Ejecución simultánea con Transformers agota 16 GB compartidos | Ejecución secuencial |
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| NaN in TF v2 (step 40) | `float16` without AMP → logit overflow on long sequences | `dtype=float32` + `max_grad_norm=0.3` |
+| 0 steps in Unsloth v2 | `max_steps=-1` with `epochs=2` → empty schedule in MLXTrainer | explicit `max_steps=1500` |
+| SIGABRT in Unsloth v2 (step ~510) | 6,887-token example triggers Metal assertion at `max_seq_len=512` | `max_seq_len=384` |
+| OOM / SIGKILL in Unsloth v2 | Concurrent run with Transformers exhausts 16 GB shared memory | sequential execution |
 
-Ver `analysis2.md` para diagnóstico completo y curvas de loss.  
-Ver `promps.md` para respuestas completas por modelo y por framework.
+See `analysis2.md` for full diagnostics and loss curves.  
+See `promps.md` for complete model responses (human eval + inference).
